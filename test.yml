@@ -1,0 +1,14 @@
+services:
+  filebrowser-laptop1:
+    image: hurlenko/filebrowser
+    container_name: filebrowser-laptop1
+    user: "0:0"
+    ports:
+      - 2400:8080
+    volumes:
+      - /apps:/data/apps
+      - /apps/filebrowser/data:/data
+      - /apps/filebrowser/config:/config
+    environment:
+      - FB_BASEURL=/filebrowser
+    restart: always
