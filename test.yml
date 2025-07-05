@@ -3,40 +3,48 @@ services:
     image: nginx:1.25
     container_name: my-nginx
     command: ["nginx", "-g", "daemon off;"]
-    entrypoint: ["/docker-entrypoint.sh"]
     restart: always
     ports:
-      - "8080:80"
-      - "443:443"
+      - 8080:80
+      - 443:443
+    volumes:
+      - webdata:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./logs:/var/log/nginx:ro
     environment:
       - NGINX_HOST=localhost
       - NGINX_PORT=80
       - FOO=bar
-    env_file:
-      - .env
-    volumes:
-      - webdata:/usr/share/nginx/html
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    networks:
-      - frontend
-    depends_on:
-      - db
+      - DEBUG=true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 5s
-    labels:
-      - "traefik.enable=true"
-      - "com.example.description=Web server"
+      start_interval: 10s
+    depends_on:
+      - db
+      - redis
+    entrypoint: ["/docker-entrypoint.sh"]
+    env_file:
+      - .env
+      - .env.production
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - host.docker.internal:host-gateway
+      - api.example.com:192.168.1.10
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    networks:
+      - frontend
+      - backend
     user: "1000:1000"
     working_dir: /usr/share/nginx/html
+    labels:
+      - "traefik.enable=true"
+      - "com.example.description=Web server"
+      - "com.example.version=1.0"
     privileged: true
     read_only: false
 
@@ -45,33 +53,125 @@ services:
     container_name: my-postgres
     restart: unless-stopped
     ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: testdb
+      - 5432:5432
     volumes:
       - dbdata:/var/lib/postgresql/data
-    networks:
-      - frontend
+      - ./backups:/backups:ro
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=testdb
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user"]
       interval: 10s
       timeout: 5s
       retries: 3
-    labels:
-      com.example.description: "Database server"
+      start_period: 10s
+      start_interval: 5s
     depends_on:
       - web
+    networks:
+      - backend
     user: "999"
     working_dir: /var/lib/postgresql/data
+    labels:
+      - "com.example.description=Database server"
+      - "com.example.type=database"
     privileged: false
     read_only: true
 
-volumes:
-  webdata:
-  dbdata:
+  redis:
+    image: redis:7-alpine
+    container_name: my-redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - redisdata:/data
+    environment:
+      - REDIS_PASSWORD=secret
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+      start_interval: 2s
+    networks:
+      - backend
+    user: "redis"
+    working_dir: /data
+    labels:
+      - "com.example.description=Cache server"
+    privileged: false
+    read_only: false
 
 networks:
   frontend:
     driver: bridge
+    attachable: true
+    internal: false
+    enable_ipv6: true
+    driver_opts:
+      com.docker.network.bridge.name: frontend-bridge
+    labels:
+      - "com.example.network=frontend"
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+      options:
+        foo: bar
+
+  backend:
+    driver: bridge
+    attachable: false
+    internal: true
+    enable_ipv6: false
+    driver_opts:
+      com.docker.network.bridge.name: backend-bridge
+    labels:
+      - "com.example.network=backend"
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.0.0/16
+          gateway: 172.21.0.1
+
+  external_network:
+    external:
+      name: my_external_network
+
+volumes:
+  webdata:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /path/to/webdata
+    labels:
+      - "com.example.volume=webdata"
+
+  dbdata:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /path/to/dbdata
+    labels:
+      - "com.example.volume=dbdata"
+
+  redisdata:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /path/to/redisdata
+    labels:
+      - "com.example.volume=redisdata"
+
+  external_volume:
+    external:
+      name: my_external_volume
