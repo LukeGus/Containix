@@ -31,6 +31,7 @@ Before submitting a compose file, ensure the following are true:
 - The Docker image is publicly available to pull
 - All environment variables should be included within the text, not within a .env file
 - If possible, use the `latest` tag for the image
+- Multiple services within one compose are fine, as long as they are related/required for them to work
 
 # License
 Distributed under the MIT license. See LICENSE for more information.
