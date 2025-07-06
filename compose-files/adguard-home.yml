@@ -19,5 +19,5 @@ services:
       - "5443:5443/tcp"
       - "5443:5443/udp"
     volumes:
-      - /WORK_DIR:/opt/adguardhome/work
-      - /CONFIG_DIR:/opt/adguardhome/conf
+      - /ADGUARD_WORK:/opt/adguardhome/work
+      - /ADGUARD_CONFIG:/opt/adguardhome/conf
