@@ -25,6 +25,8 @@ Containix is almost entirely run by the community. To add your self-hosted servi
 ### Notes
 [Any other context or setup instructions]
 ```
+To update a compose file, use the same template, but include 'Update' in the notes.
+
 Before submitting a compose file, ensure the following are true:
 - All comments in the file have been removed
 - Unnecessary ports, environment variables, etc., have been removed
