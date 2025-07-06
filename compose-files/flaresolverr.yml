@@ -6,7 +6,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
       - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
-      - TZ=America/Chicago
+      - TZ=Etc/UTC
       - PORT=8080
     network_mode: host
     restart: unless-stopped
