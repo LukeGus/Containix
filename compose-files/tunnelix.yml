@@ -1,0 +1,15 @@
+services:
+  tunnelix:
+    image: ghcr.io/lukegus/tunnelix:latest
+    container_name: tunnelix
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - tunnelix-data:/app/data
+    environment:
+      SALT: "2v.F7!6a!jIzmJsu|[)h61$ZMXs;,i+~"
+      PORT: "8080"
+volumes:
+  tunnelix-data:
+    driver: local
