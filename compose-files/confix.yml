@@ -1,0 +1,15 @@
+services:
+  confix:
+    image: ghcr.io/lukegus/confix:latest
+    container_name: confix
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - confix-data:/app/src/backend/data
+    environment:
+      SALT: "2v.F7!6a!jIzmJsu|[)h61$ZMXs;,i+~"
+      PORT: "8080"
+volumes:
+  confix-data:
+    driver: local
