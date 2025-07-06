@@ -32,6 +32,7 @@ Before submitting a compose file, ensure the following are true:
 - All environment variables should be included within the text, not within a .env file
 - If possible, use the `latest` tag for the image
 - Multiple services within one compose are fine, as long as they are related/required for them to work
+- Replace external volume paths with descriptive all-caps placeholders indicating their purpose. For example, change `/data/adguard-home/work:/opt/adguardhome/work` to `/WORK_DIR:/opt/adguardhome/work`
 
 # License
 Distributed under the MIT license. See LICENSE for more information.
